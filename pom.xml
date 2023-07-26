@@ -7,7 +7,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.miniorange.usermanagement</groupId>
     <artifactId>jira-user-management</artifactId>
-    <version>1.0.17</version>
+    <version>1.0.18</version>
 
     <organization>
         <name>miniOrange</name>
