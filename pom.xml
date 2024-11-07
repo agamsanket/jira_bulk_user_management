@@ -7,7 +7,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.miniorange.usermanagement</groupId>
     <artifactId>jira-user-management</artifactId>
-    <version>1.0.28</version>
+    <version>1.0.33</version>
 
     <organization>
         <name>miniOrange</name>
@@ -209,6 +209,12 @@
                     <artifactId>kotlin-stdlib</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.annotations</groupId>
+            <artifactId>atlassian-annotations</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Uncomment to use TestKit in your project. Details at https://bitbucket.org/atlassian/jira-testkit -->
