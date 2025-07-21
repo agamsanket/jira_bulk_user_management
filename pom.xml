@@ -1,134 +1,336 @@
-<atlassian-plugin key="${atlassian.plugin.key}" name="${project.name}" plugins-version="2">
-    <plugin-info>
-        <description>${project.description}</description>
-        <version>${project.version}</version>
-        <vendor name="${project.organization.name}" url="${project.organization.url}" />
-        <param name="plugin-icon">images/icon.png</param>
-        <param name="plugin-logo">images/logo.png</param>
-        <param name="configure.url">/plugins/servlet/usermanagement/userdeactivate</param>
-        <param name="atlassian-data-center-compatible">true</param>
-        <param name="atlassian-data-center-status">compatible</param>
-        <param name="atlassian-licensing-enabled">true</param>
-    </plugin-info>
+<?xml version="1.0" encoding="UTF-8"?>
 
-    <!-- add our i18n resource -->
-    <resource type="i18n" name="i18n" location="bitbucket-user-management"/>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-    <web-resource key="bitbucket.user.management.admin.auth.resources" i18n-name-key="bitbucket.user.management.admin.auth.resources">
-        <resource name="licensewarning.js" type="download" location="js/licensewarning.js" />`
-        <context>atl.general</context>
-    </web-resource>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.miniorange.usermanagement</groupId>
+    <artifactId>jira-user-management</artifactId>
+    <version>1.2.0</version>
 
-    <!-- add our web resources -->
-    <web-resource key="bitbucket-user-management-resources" name="bitbucket-user-management Web Resources">
-        <dependency>com.atlassian.auiplugin:ajs</dependency>
-        <dependency>com.atlassian.auiplugin:aui-select2</dependency>
-        <dependency>com.atlassian.auiplugin:aui-toggle</dependency>
-        <dependency>com.atlassian.auiplugin:aui-label</dependency>
+    <organization>
+        <name>miniOrange</name>
+        <url>https://miniorange.com/</url>
+    </organization>
 
-        <resource type="download" name="bitbucket-user-management.css" location="/css/bitbucket-user-management.css"/>
-        <resource type="download" name="bitbucket-user-management.js" location="/js/bitbucket-user-management.js"/>
-        <resource type="download" name="images/" location="/images"/>
+    <name>Bulk User Management For Jira</name>
+    <description> Easily manage your user license by deactivating and deleting the user at the right time.</description>
+    <packaging>atlassian-plugin</packaging>
 
-        <context>atl.general</context>
-    </web-resource>
+    <dependencies>
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-api</artifactId>
+            <version>${jira.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Add dependency on jira-core if you want access to JIRA implementation classes as well as the sanctioned API. -->
+        <!-- This is not normally recommended, but may be required eg when migrating a plugin originally developed against JIRA 4.x -->
 
-    <web-item name="Bulk User Managemnet Menu" i18n-name-key="usermanagement.troubleshooting.menu" key="usermanagement.troubleshooting.menu"  section="atl.admin/admin-plugins-section" weight="150" application="bitbucket" >
-        <decription key="troubleshooting.menu.descb"></decription>
-        <label key="miniOrange Troubleshooting">miniOrange Bulk User Management</label>
-        <link linkId="usermanagement.troubleshooting.menu.link">/plugins/servlet/usermanagement/userdeactivate</link>
-    </web-item>
+        <dependency>
+            <groupId>com.atlassian.jira</groupId>
+            <artifactId>jira-core</artifactId>
+            <version>${jira.version}</version>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jsoup</groupId>
+                    <artifactId>jsoup</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.9</version>
+        </dependency>
 
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>32.1.2-jre</version>
+        </dependency>
 
-    <component-import key="PluginLicenseManager" interface="com.atlassian.upm.api.license.PluginLicenseManager" />
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.10</version>
+            <scope>test</scope>
+        </dependency>
 
-    <component-import i18n-name-key="sal.user.manager" key="sal.api.user.manager" name="User Manager" interface="com.atlassian.sal.api.user.UserManager" filter="" />
-    <component-import i18n-name-key="sal.transaction.manager" key="sal.api.transaction.template" name="Transaction template" interface="com.atlassian.sal.api.transaction.TransactionTemplate" filter="" />
+        <dependency>
+            <groupId>com.atlassian.plugin</groupId>
+            <artifactId>atlassian-spring-scanner-annotation</artifactId>
+            <version>${atlassian.spring.scanner.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
-    <component i18n-name-key="usermanagement.plugin.settings" key="usermanagement.plugin.settings" name="Advance User Management Plugin Settings" class="com.miniorange.usermanagement.common.UserManagementPluginSettings" />
-    <component i18n-name-key="usermanagement.plugin.handler" key="usermanagement.plugin.handler" name="Advance User Managemet Plugin Handler" class="com.miniorange.usermanagement.common.UserManagementPluginHandler" />
+        <dependency>
+            <groupId>com.atlassian.plugin</groupId>
+            <artifactId>atlassian-spring-scanner-runtime</artifactId>
+            <version>${atlassian.spring.scanner.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.sal</groupId>
+            <artifactId>sal-api</artifactId>
+            <version>4.0.0-490c946</version>
+            <scope>provided</scope>
+        </dependency>
 
-    <component-import i18n-name-key="usermanagement.plugin.settings.factory" key="usermanagement.plugin.settings.factory" name="Plugin Settings Factory" interface="com.atlassian.sal.api.pluginsettings.PluginSettingsFactory" filter="" />
+        <!-- Adding to make the plugin Atlassian verified-->
 
-    <component i18n-name-key="usermanagement.plugin.handler.bitbucket" key="usermanagement.plugin.handler.bitbucket" name="User Management Plugin Handler" class="com.miniorange.usermanagement.bitbucket.MoBulkUserManagementPluginHandler" />
+        <dependency>
+            <groupId>com.atlassian.upm</groupId>
+            <artifactId>licensing-api</artifactId>
+            <version>2.21.4</version>
+            <scope>provided</scope>
+        </dependency>
 
-    <component i18n-name-key="usermanagement.plugin.configuration" key="usermanagement.plugin.configuration" name="User Management Plugin configuration" class="com.miniorange.usermanagement.bitbucket.MoBulkUserManagementPluginConfiguration" />
+        <!-- https://mvnrepository.com/artifact/com.atlassian.jira.plugins/jira-auditing-plugin -->
+        <dependency>
+            <groupId>com.atlassian.jira.plugins</groupId>
+            <artifactId>jira-auditing-plugin</artifactId>
+            <version>9.1.0-QR-20220617085527</version>
+            <scope>provided</scope>
+        </dependency>
 
-    <component-import i18n-name-key="usermanagement.plugin.renderer"
-                      key="renderer" name="Template Renderer"
-                      interface="com.atlassian.templaterenderer.velocity.one.six.VelocityTemplateRenderer" />
-    <component-import key="bulkusermanagement.plugin.ApplicationProperties"
-                      interface="com.atlassian.sal.api.ApplicationProperties" />
+        <dependency>
+            <groupId>com.atlassian.upm</groupId>
+            <artifactId>upm-api</artifactId>
+            <version>2.21</version>
+            <scope>provided</scope>
+        </dependency>
 
-    <component-import i18n-name-key="usermanagement.plugin.loginUriProvider"
-                      key="loginUriProvider" name="Login URI Provider"
-                      interface="com.atlassian.sal.api.auth.LoginUriProvider" />
+        <!-- WIRED TEST RUNNER DEPENDENCIES -->
+        <dependency>
+            <groupId>com.atlassian.plugins</groupId>
+            <artifactId>atlassian-plugins-osgi-testrunner</artifactId>
+            <version>${plugin.testrunner.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>jsr311-api</artifactId>
+            <version>1.1.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.mks.api</groupId>
+            <artifactId>mksapi-jar</artifactId>
+            <version>4.10.9049</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.crowd</groupId>
+            <artifactId>embedded-crowd-api</artifactId>
+            <version>2.8.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8</version>
+        </dependency>
+        <dependency>
+            <groupId>com.miniorange.usermanagement</groupId>
+            <artifactId>common-usermanagement</artifactId>
+            <version>1.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.crowd</groupId>
+            <artifactId>crowd-api</artifactId>
+            <version>2.8.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.crowd</groupId>
+            <artifactId>crowd-integration-api</artifactId>
+            <version>2.8.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.crowd</groupId>
+            <artifactId>embedded-crowd-core</artifactId>
+            <version>2.8.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.application</groupId>
+            <artifactId>atlassian-application-api</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.8</version>
+        </dependency>
+        <dependency>
+            <groupId>opensymphony</groupId>
+            <artifactId>webwork</artifactId>
+            <version>1.4-atlassian-30</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>au.com.bytecode</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>opensymphony</groupId>
+            <artifactId>propertyset</artifactId>
+            <version>1.5</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.14.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.ofbiz</groupId>
+            <artifactId>entityengine</artifactId>
+            <version>1.3.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>5.0.0-alpha.14</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jetbrains.kotlin</groupId>
+                    <artifactId>kotlin-stdlib</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.annotations</groupId>
+            <artifactId>atlassian-annotations</artifactId>
+            <version>5.0.0</version>
+            <scope>provided</scope>
+        </dependency>
 
-    <component-import i18n-name-key="usermanagement.user.service"
-                      key="user.service" name="User Service" interface="com.atlassian.bitbucket.user.UserService"
-                      filter="" />
+        <!-- Uncomment to use TestKit in your project. Details at https://bitbucket.org/atlassian/jira-testkit -->
+        <!-- You can read more about TestKit at https://developer.atlassian.com/display/JIRADEV/Plugin+Tutorial+-+Smarter+integration+testing+with+TestKit -->
+        <!--
+        <dependency>
+            <groupId>com.atlassian.jira.tests</groupId>
+            <artifactId>jira-testkit-client</artifactId>
+            <version>${testkit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        -->
+    </dependencies>
 
-    <component-import i18n-name-key="usermanagement.user.userAdminService"
-                      key="userAdminService" name="User Admin Service"
-                      interface="com.atlassian.bitbucket.user.UserAdminService" />
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>maven-jira-plugin</artifactId>
+                <version>${amps.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <productVersion>${jira.version}</productVersion>
+                    <productDataVersion>${jira.version}</productDataVersion>
+                    <!-- Uncomment to install TestKit backdoor in JIRA. -->
+                    <!--
+                    <pluginArtifacts>
+                        <pluginArtifact>
+                            <groupId>com.atlassian.jira.tests</groupId>
+                            <artifactId>jira-testkit-plugin</artifactId>
+                            <version>${testkit.version}</version>
+                        </pluginArtifact>
+                    </pluginArtifacts>
+                    -->
+<!--                    <enableQuick>true</enableQuick>-->
+                    <enableFastdev>false</enableFastdev>
 
-    <component-import i18n-name-key="usermanagement.user.securityService"
-                      key="securityService" name="Security Service"
-                      interface="com.atlassian.bitbucket.user.SecurityService" />
+                    <!-- See here for an explanation of default instructions: -->
+                    <!-- https://developer.atlassian.com/docs/advanced-topics/configuration-of-instructions-in-atlassian-plugins -->
+<!--                    <instructions>
+                        <Atlassian-Plugin-Key>${atlassian.plugin.key}</Atlassian-Plugin-Key>
 
-    <component i18-name-key="usermanagement.plugin.settings.migration" key="usermanagement.plugin.settings.migration"
-               class="com.miniorange.usermanagement.bitbucket.MoBulkUserManagementMigrationEvent" public="true">
-        <description>The plugin component that migrates the plugin settings.</description>
-        <interface>org.springframework.beans.factory.DisposableBean</interface>
-        <interface>org.springframework.beans.factory.InitializingBean</interface>
-    </component>
+                        &lt;!&ndash; Add package to export here &ndash;&gt;
+                        <Export-Package>
+                            com.miniorange.usermanagement.jira.api,
+                        </Export-Package>
 
-    <component i18n-name-key="usermanagement.plugin.scheduler" key="usermanagement.plugin.scheduler" name="sync periodic refresh service"
-               class="com.miniorange.usermanagement.bitbucket.scheduler.MoUserDeactivatorScheduler" public="true">
-        <description>The plugin component that schedule the sync periodically</description>
-        <interface>com.atlassian.sal.api.lifecycle.LifecycleAware</interface>
-    </component>
+                        &lt;!&ndash; Add package import here &ndash;&gt;
+                        <Import-Package>
+                            org.springframework.osgi.*;resolution:="optional",
+                            org.eclipse.gemini.blueprint.*;resolution:="optional",
+                            *
+                        </Import-Package>
 
-    <component i18n-name-key="usermanagement.plugin.scheduler.DeactivterTask" key="usermanagement.plugin.scheduler.DeactivterTask"
-               class="com.miniorange.usermanagement.bitbucket.scheduler.MoUserDeactivatorTask">
-        <interface>com.atlassian.scheduler.JobRunner</interface>
-    </component>
+                        &lt;!&ndash; Ensure plugin is spring powered &ndash;&gt;
+                        <Spring-Context>*</Spring-Context>
+                    </instructions>-->
+                </configuration>
+            </plugin>
 
-    <component i18n-name-key="usermanagement.plugin.utils" key="usermanagement.plugin.utils" name="Advance User Managemet Plugin Utility"
-               class="com.miniorange.usermanagement.bitbucket.utility.MoBitbucketUserManagementUtility"/>
+            <plugin>
+                <groupId>com.atlassian.plugin</groupId>
+                <artifactId>atlassian-spring-scanner-maven-plugin</artifactId>
+                <version>${atlassian.spring.scanner.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>atlassian-spring-scanner</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <scannedDependencies>
+                        <dependency>
+                            <groupId>com.atlassian.plugin</groupId>
+                            <artifactId>atlassian-spring-scanner-external-jar</artifactId>
+                        </dependency>
+                    </scannedDependencies>
+                    <verbose>false</verbose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <basedir/>
+                    <buildDirectory/>
+                    <mainOutputDirectory/>
+                    <outputDirectory/>
+                    <projectArtifact/>
+                    <source>9</source>
+                    <target>9</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-    <component i18n-name-key="usermanagement.bitbucket.plugin.settings" key="usermanagement.bitbucket.plugin.settings" name="Advance User Managemet Plugin Utility"
-               class="com.miniorange.usermanagement.bitbucket.MoBulkUserManagementBitbucketPluginSettings"/>
+    <properties>
+        <jira.version>9.0.0</jira.version>
+        <amps.version>6.3.21</amps.version>
+        <plugin.testrunner.version>1.2.3</plugin.testrunner.version>
+        <atlassian.spring.scanner.version>1.2.13</atlassian.spring.scanner.version>
+        <!-- This key is used to keep the consistency between the key in atlassian-plugin.xml and the key to generate bundle. -->
+        <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
+        <!-- TestKit version 6.x for JIRA 6.x -->
+        <testkit.version>6.3.11</testkit.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
 
-
-    <!--Servlet for Action Class-->
-
-    <servlet name="Bulk UserManagement Action" i18n-name-key="usermanagement.action.BulkUserManagement"
-             key="usermanagement.action.BulkUserManagementAction" class="com.miniorange.usermanagement.bitbucket.action.MoBulkUserManagementAction">
-        <description key="usermanagement.action.BulkUserManagementAction.desc"></description>
-        <url-pattern>/usermanagement/bulkusermanagement</url-pattern>
-    </servlet>
-
-    <servlet name="Troubleshooting Action" i18n-name-key="usermanagement.action.TroubleShooting"
-             key="usermanagement.action.TroubleShootingAction" class="com.miniorange.usermanagement.bitbucket.action.MoTroubleshootingAction">
-        <description key="usermanagement.action.TroubleShootingAction.desc"></description>
-        <url-pattern>/usermanagement/troubleshooting</url-pattern>
-    </servlet>
-
-    <servlet name="User Deactivate Action" i18n-name-key="usermanagement.action.DeactivateUser"
-             key="usermanagement.action.DeactivateUser" class="com.miniorange.usermanagement.bitbucket.action.MoUserDeactivateAction">
-        <description key="usermanagement.action.DeactivateUser.desc"></description>
-        <url-pattern>/usermanagement/userdeactivate</url-pattern>
-    </servlet>
-
-
-    <!--Servlet for Action Class Ends-->
-
-    <servlet name="Ajax Action Calls" i18n-name-key="usermanagement.config.ajaxcallservlet"
-             key="usermanagement.config.ajaxcallservlet" class="com.miniorange.usermanagement.bitbucket.servlet.MoAjaxCallsServlet">
-        <description key="usermanagement.config.ajaxcallservlet.desc">This module provides different ajax functions.
-        </description>
-        <url-pattern>/usermanagement/moapi</url-pattern>
-    </servlet>
-
-</atlassian-plugin>
+</project>
